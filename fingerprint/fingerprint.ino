@@ -4,11 +4,15 @@
 #include <Adafruit_RGBLCDShield.h>
 #include <utility/Adafruit_MCP23017.h>
 #include <Servo.h>
+#include "RTClib.h"
 
 int feedbackpin = A2;
 int servopin = 8;
 const int ledPin = 13;      // the number of the LED pin
 const int ledPin2 = 12;      // the number of the LED pin
+
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 
 Servo myservo;  
@@ -32,12 +36,12 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
 void setup()  
 {
   myservo.attach(servopin);  // attaches the servo on pin 9 to the servo object
-  calibrate(myservo,feedbackpin,20,160);
+  calibrate(myservo,feedbackpin,0,179);
   pinMode(ledPin, OUTPUT);
   pinMode(ledPin2, OUTPUT);
   digitalWrite(ledPin, ledState);
   digitalWrite(ledPin2, ledState2);
-  Serial.begin(9600);
+  Serial.begin(57600);
   lcd.begin(16, 2);
   lcd.setBacklight(WHITE);
   lcd.clear();
@@ -165,10 +169,10 @@ uint8_t getFingerprintID() {
   ledState2 = !ledState2;
   digitalWrite(ledPin, ledState);
   digitalWrite(ledPin2, ledState2);
-  myservo.write(pos+30);
+  myservo.write(pos+43);
   delay(1000);
-  //myservo.write(0);
-  delay(10000);
+ // myservo.write(0);
+ // delay(1000);
 
   return finger.fingerID;
 }
@@ -177,9 +181,23 @@ uint8_t getFingerprintID() {
 
 void loop()                     // run over and over again
 {
-  uint8_t y=0;
-  uint8_t x=getFingerprintID();
+ uint8_t y=0;
+ uint8_t x=getFingerprintID();
+ DateTime now = rtc.now();
+ Serial.print(now.year(), DEC);
+ Serial.print('/');
+ Serial.print(now.month(), DEC);
+ Serial.print('/');
+ Serial.print(now.day(), DEC);
+ Serial.print(" (");
+ Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
+ Serial.print(") ");
+ Serial.print(now.hour(), DEC);
+ Serial.print(':');
+ Serial.print(now.minute(), DEC);
+ Serial.print(':');
+ Serial.print(now.second(), DEC);
+ Serial.println();
   
-  
-  delay(50);            //don't ned to run this at full speed.
+ delay(100);            //don't ned to run this at full speed.
 }
